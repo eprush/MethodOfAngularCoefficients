@@ -2,10 +2,12 @@ import os
 import math
 import numpy as np
 
-#УГЛОВЫЕ КОЭФФИЦИЕНТЫ
+
+# УГЛОВЫЕ КОЭФФИЦИЕНТЫ
 def scalar_prod(v_1, v_2):
     v_1, v_2 = np.array(v_1), np.array(v_2)
-    return (v_1 * v_2).sum()
+    return np.dot(v_1, v_2)
+
 
 def module(v):
     return math.sqrt(scalar_prod(v, v))
@@ -22,15 +24,17 @@ def elementary(center_i: list, center_j: list, normal_i: list, normal_j: list, F
     cos_2 = abs(scalar_prod(normal_j, center_i - center_j)) / (r * n_j)
     return cos_1 * cos_2 / (math.pi * r ** 2) * F_j
 
+
 def local(center_i, centers_2, normal_i, normal_j, F_j):
-    return sum([ elementary(center_i, center, normal_i, normal_j, F_j) for center in centers_2])
-
-def emitter_to_collector(centers_1, centers_2,normal_1, normal_2, F_i, F_j):
-    #F_i - площадь одной ячейки эмиттера.
-    return sum( [ local(center, centers_2, normal_1, normal_2, F_j) for center in centers_1 ] ) * F_i
+    return sum([elementary(center_i, center, normal_i, normal_j, F_j) for center in centers_2])
 
 
-#РАЗБИЕНИЕ
+def emitter_to_collector(centers_1, centers_2, normal_1, normal_2, F_i, F_j):
+    # F_i - площадь одной ячейки эмиттера.
+    return sum([local(center, centers_2, normal_1, normal_2, F_j) for center in centers_1]) * F_i
+
+
+# РАЗБИЕНИЕ
 def euclid(num_1, num_2):
     while num_1 != num_2:
         if num_1 > num_2:
@@ -39,19 +43,21 @@ def euclid(num_1, num_2):
             num_2 -= num_1
     return num_1
 
-#ф-ция находит минимальное количество квадратов
-#с одинаковой площадью, на которое можно разбить
-#данный прямоугольник
-def search_squares(a : int, b : int) -> int:
-    gcd = euclid(a,b) #НОД
-    return a*b/gcd
 
-#ф-ция ищет оптимальное кол-во квадратов
-#в зависимости от введенного кол-ва
+# ф-ция находит минимальное количество квадратов
+# с одинаковой площадью, на которое можно разбить
+# данный прямоугольник
+def search_squares(a: int, b: int) -> int:
+    gcd = euclid(a, b)  # НОД
+    return int(a * b / gcd)
+
+
+# ф-ция ищет оптимальное кол-во квадратов
+# в зависимости от введенного кол-ва
 def optimal_squares(a, b, num):
-    min_num = search_squares(a,b)
-    n       = num//(4*min_num)
-    return min_num if n == 0 else 4*min_num*n
+    min_num = search_squares(a, b)
+    n = num // (4 * min_num)
+    return 4 * min_num * n if n > 0 else min_num
 
 
 # функции разбиения каждой отдельной поверхности на ячейки.
@@ -73,7 +79,7 @@ def breaking_1(a, b, num, s=0) -> list:
             z = b / (2 * l_2) + b / l_2 * j
             center = [x, 0, z]
             res.append(center)
-    return res, num
+    return res
 
 
 def breaking_2(a, b, num, s) -> list:
@@ -89,7 +95,7 @@ def breaking_2(a, b, num, s) -> list:
             z = b / (2 * l_2) + b / l_2 * j
             center = [x, s, z]
             res.append(center)
-    return res, num
+    return res
 
 
 def breaking_3(a, b, num, s) -> list:
@@ -105,7 +111,7 @@ def breaking_3(a, b, num, s) -> list:
             y = s / (2 * l_2) + s / l_2 * j
             center = [x, y, b]
             res.append(center)
-    return res, num
+    return res
 
 
 def breaking_4(a, b, num, s) -> list:
@@ -121,7 +127,7 @@ def breaking_4(a, b, num, s) -> list:
             z = b / (2 * l_2) + b / l_2 * j
             center = [0, y, z]
             res.append(center)
-    return res, num
+    return res
 
 
 def breaking_5(a, b, num, s) -> list:
@@ -137,7 +143,7 @@ def breaking_5(a, b, num, s) -> list:
             y = s / (2 * l_2) + s / l_2 * j
             center = [x, y, 0]
             res.append(center)
-    return res, num
+    return res
 
 
 def breaking_6(a, b, num, s) -> list:
@@ -153,29 +159,33 @@ def breaking_6(a, b, num, s) -> list:
             z = b / (2 * l_2) + b / l_2 * j
             center = [a, y, z]
             res.append(center)
-    return res, num
+    return res
 
-#площади "уникальных" поверхностей - area_1 == area_2 итд
+
+# площади "уникальных" поверхностей - area_1 == area_2 итд
 def area_1(a, b, s):
-    return a*b
+    return a * b
+
 
 def area_3(a, b, s):
-    return a*s
+    return a * s
+
 
 def area_4(a, b, s):
-    return s*b
+    return s * b
 
-#ПРОВОДИМОСТЬ
-#ф-ция, заменяющая столбец матрицы
-def change_column(A, j : int = 0):
-    #A - матрица
-    #j - номер изменяемого столбца
+
+# ПРОВОДИМОСТЬ
+# ф-ция, заменяющая столбец матрицы
+def change_column(A, j: int = 0):
+    # A - матрица
+    # j - номер изменяемого столбца
     new_A = A.copy()
     for i in range(len(new_A)):
         if i:
             new_A[i][j] = 0
         else:
-            new_A[i][j] = -1
+            new_A[i][j] = 1
     return new_A
 
 
@@ -202,17 +212,19 @@ class Rectangular:
         # параметры коллектора:
         # num_j - число квадратов, на которое
         # удалось разделить коллектор в итоге
-        collector, num_j = self.breaking[j](self.a, self.b, num_2, self.L)
-        normal_j = self.normals[j]
-        cell_j = self.areas[j] / num_j
+        collector = self.breaking[j](self.a, self.b, num_2, self.L)
+        num_j     = len(collector)
+        normal_j  = self.normals[j]
+        cell_j    = self.areas[j] / num_j
 
         # параметры эмиттера:
         # num_i - число квадратов, на которое
         # удалось разделить эмиттер в итоге
-        emitter, num_i = self.breaking[i](self.a, self.b, num_1, self.L)
-        normal_i = self.normals[i]
-        area_i = self.areas[i]
-        cell_i = area_i / num_i
+        emitter   = self.breaking[i](self.a, self.b, num_1, self.L)
+        num_i     = len(emitter)
+        normal_i  = self.normals[i]
+        area_i    = self.areas[i]
+        cell_i    = area_i / num_i
         return emitter_to_collector(emitter, collector, normal_i, normal_j, cell_i, cell_j) / area_i
 
     def matrix(self, num_1, num_2):
@@ -243,18 +255,18 @@ class Rectangular:
     def clausing(self, num_1=10, num_2=10):
         phi = self.matrix(num_1, num_2)
         # СЛУ
-        sle = [[-1, phi[2][1], 2 * phi[3][1], 2 * phi[4][1]], [phi[1][2], -1, 2 * phi[3][2], 2 * phi[4][2]],
-               [phi[1][3], phi[2][3], -1 + phi[5][3], 2 * phi[4][3]],
-               [phi[1][4], phi[2][4], 2 * phi[3][4], -1 + phi[6][4]]]
+        sle = [[1, 0, 0],
+               [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
+               [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]]
         sle = np.array(sle)
         delta = np.linalg.det(sle)
-        q = []
+        q = []  # [Q_1, Q_3, Q_4]
         # метод Крамера
-        for j in range(4):
+        for j in range(3):
             new_sle = change_column(sle, j)
             delta_j = np.linalg.det(new_sle)
             q.append(delta_j / delta)
         res = phi[1][2] * q[0]
-        res += 2 * phi[3][2] * q[2]
-        res += 2 * phi[4][2] * q[3]
+        res += 2 * phi[3][2] * q[1]
+        res += 2 * phi[4][2] * q[2]
         return res
