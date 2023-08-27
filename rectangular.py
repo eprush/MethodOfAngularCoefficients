@@ -20,18 +20,18 @@ def elementary(center_i: list, center_j: list, normal_i: list, normal_j: list, F
     r = module(center_i - center_j)
     n_i, n_j = module(normal_i), module(normal_j)
 
-    cos_1 = abs(scalar_prod(normal_i, center_j - center_i)) / (r * n_i)
-    cos_2 = abs(scalar_prod(normal_j, center_i - center_j)) / (r * n_j)
-    return cos_1 * cos_2 / (math.pi * r ** 2) * F_j
+    cos_i = abs(scalar_prod(normal_i, center_j - center_i)) / (r * n_i)
+    cos_j = abs(scalar_prod(normal_j, center_i - center_j)) / (r * n_j)
+    return cos_i * cos_j / (math.pi * r ** 2) * F_j
 
 
-def local(center_i, centers_2, normal_i, normal_j, F_j):
-    return sum([elementary(center_i, center, normal_i, normal_j, F_j) for center in centers_2])
+def local(center_i, centers_j, normal_i, normal_j, F_j):
+    return sum([elementary(center_i, center, normal_i, normal_j, F_j) for center in centers_j])
 
 
-def emitter_to_collector(centers_1, centers_2, normal_1, normal_2, F_i, F_j):
+def emitter_to_collector(centers_i, centers_j, normal_i, normal_j, F_i, F_j):
     # F_i - площадь одной ячейки эмиттера.
-    return sum([local(center, centers_2, normal_1, normal_2, F_j) for center in centers_1]) * F_i
+    return sum([local(center, centers_j, normal_i, normal_j, F_j) for center in centers_i]) * F_i
 
 
 # РАЗБИЕНИЕ
