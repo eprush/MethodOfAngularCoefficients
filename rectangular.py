@@ -46,14 +46,14 @@ def euclid(num_1, num_2):
 
 # ф-ция находит минимальное количество квадратов
 # с одинаковой площадью, на которое можно разбить
-# данный прямоугольник
+# прямоугольник со сторонами a и b.
 def search_squares(a: int, b: int) -> int:
     gcd = euclid(a, b)  # НОД
     return int(a * b / gcd)
 
 
 # ф-ция ищет оптимальное кол-во квадратов
-# в зависимости от введенного кол-ва
+# в зависимости от введенного кол-ва.
 def optimal_squares(a, b, num):
     min_num = search_squares(a, b)
     n = num // (4 * min_num)
@@ -66,7 +66,7 @@ def optimal_squares(a, b, num):
 # если смотреть в направлении от 1 к 2, то
 # 3,4,5 и 6 грани пронумерованы по часовой стрелке.
 def breaking_1(a, b, num, s=0) -> list:
-    # a - вдоль x, b - вдоль z, s - вдоль y
+    # a - вдоль x, b - вдоль z, s - вдоль y.
     num = optimal_squares(a, b, num)
 
     square_side = math.sqrt(a * b / num)
@@ -74,9 +74,9 @@ def breaking_1(a, b, num, s=0) -> list:
     l_2 = int(b / square_side)
     res = []
     for i in range(l_1):
-        x = a / (2 * l_1) + a / l_1 * i
+        x = a / (2 * l_1) + square_side * i
         for j in range(l_2):
-            z = b / (2 * l_2) + b / l_2 * j
+            z = b / (2 * l_2) + square_side * j
             center = [x, 0, z]
             res.append(center)
     return res
@@ -90,9 +90,9 @@ def breaking_2(a, b, num, s) -> list:
     l_1 = int(a / square_side)
     l_2 = int(b / square_side)
     for i in range(l_1):
-        x = a / (2 * l_1) + a / l_1 * i
+        x = a / (2 * l_1) + square_side * i
         for j in range(l_2):
-            z = b / (2 * l_2) + b / l_2 * j
+            z = b / (2 * l_2) + square_side * j
             center = [x, s, z]
             res.append(center)
     return res
@@ -106,9 +106,9 @@ def breaking_3(a, b, num, s) -> list:
     l_1 = int(a / square_side)
     l_2 = int(s / square_side)
     for i in range(l_1):
-        x = a / (2 * l_1) + a / l_1 * i
+        x = a / (2 * l_1) + square_side * i
         for j in range(l_2):
-            y = s / (2 * l_2) + s / l_2 * j
+            y = s / (2 * l_2) + square_side * j
             center = [x, y, b]
             res.append(center)
     return res
@@ -122,9 +122,9 @@ def breaking_4(a, b, num, s) -> list:
     l_1 = int(s / square_side)
     l_2 = int(b / square_side)
     for i in range(l_1):
-        y = s / (2 * l_1) + s / l_1 * i
+        y = s / (2 * l_1) + square_side * i
         for j in range(l_2):
-            z = b / (2 * l_2) + b / l_2 * j
+            z = b / (2 * l_2) + square_side * j
             center = [0, y, z]
             res.append(center)
     return res
@@ -138,9 +138,9 @@ def breaking_5(a, b, num, s) -> list:
     l_1 = int(a / square_side)
     l_2 = int(s / square_side)
     for i in range(l_1):
-        x = a / (2 * l_1) + a / l_1 * i
+        x = a / (2 * l_1) + square_side * i
         for j in range(l_2):
-            y = s / (2 * l_2) + s / l_2 * j
+            y = s / (2 * l_2) + square_side * j
             center = [x, y, 0]
             res.append(center)
     return res
@@ -154,15 +154,15 @@ def breaking_6(a, b, num, s) -> list:
     l_1 = int(s / square_side)
     l_2 = int(b / square_side)
     for i in range(l_1):
-        y = s / (2 * l_1) + s / l_1 * i
+        y = s / (2 * l_1) + square_side * i
         for j in range(l_2):
-            z = b / (2 * l_2) + b / l_2 * j
+            z = b / (2 * l_2) + square_side * j
             center = [a, y, z]
             res.append(center)
     return res
 
 
-# площади "уникальных" поверхностей - area_1 == area_2 итд
+# площади "уникальных" поверхностей - area_1 == area_2 итд.
 def area_1(a, b, s):
     return a * b
 
@@ -176,16 +176,12 @@ def area_4(a, b, s):
 
 
 # ПРОВОДИМОСТЬ
-# ф-ция, заменяющая столбец матрицы
+# ф-ция, заменяющая j-й столбец матрицы A.
 def change_column(A, j: int = 0):
-    # A - матрица
-    # j - номер изменяемого столбца
     new_A = A.copy()
-    for i in range(len(new_A)):
-        if i:
-            new_A[i][j] = 0
-        else:
-            new_A[i][j] = 1
+    new_A[0][j] = 1
+    for i in range(1,len(new_A)):
+        new_A[i][j] = 0
     return new_A
 
 
@@ -200,6 +196,19 @@ class Rectangular:
         for i in range(6):
             self.areas[i] = self.areas[i](a, b, L)
         return
+    
+    #i - номер эмиттера, а
+    #num_1 - на сколько квадратов его разбить.
+    #center_j, normal_j - параметры коллектора.
+    def to_other(self, i, center_j, normal_j, F_j, num_1):
+        # параметры эмиттера:
+        # num_i - число квадратов, на которое
+        # удалось разделить эмиттер в итоге.
+        i-=1
+        emitters  = self.breaking[i](self.a, self.b, num_1, self.L)
+        normal_i  = self.normals[i]
+        area_i    = self.areas[i]
+        return sum([elementary(emitter,center_j,normal_i,normal_j,F_j) for emitter in emitters]) / area_i
 
     def some_pair(self, i, j, num_1, num_2):
         # i - номер эмиттера   от 1 до 6.
@@ -211,31 +220,31 @@ class Rectangular:
 
         # параметры коллектора:
         # num_j - число квадратов, на которое
-        # удалось разделить коллектор в итоге
-        collector = self.breaking[j](self.a, self.b, num_2, self.L)
-        num_j     = len(collector)
+        # удалось разделить коллектор в итоге.
+        collectors= self.breaking[j](self.a, self.b, num_2, self.L)
+        num_j     = len(collectors)
         normal_j  = self.normals[j]
         cell_j    = self.areas[j] / num_j
 
         # параметры эмиттера:
         # num_i - число квадратов, на которое
-        # удалось разделить эмиттер в итоге
-        emitter   = self.breaking[i](self.a, self.b, num_1, self.L)
-        num_i     = len(emitter)
+        # удалось разделить эмиттер в итоге.
+        emitters  = self.breaking[i](self.a, self.b, num_1, self.L)
+        num_i     = len(emitters)
         normal_i  = self.normals[i]
         area_i    = self.areas[i]
         cell_i    = area_i / num_i
-        return emitter_to_collector(emitter, collector, normal_i, normal_j, cell_i, cell_j) / area_i
+        return emitter_to_collector(emitters,collectors,normal_i,normal_j,cell_i,cell_j) / area_i
 
     def matrix(self, num_1, num_2):
-        res = []  # будущая матрица УК
-        line = [0] * 7  # текущий столбец матрицы
+        res = []  # будущая матрица УК.
+        line = [0] * 7  # текущий столбец матрицы.
         # т.к. УК вида phi_21, phi_31, ..., phi_61
-        # не используются в дальнейшем
+        # не используются в дальнейшем.
         for j in range(1, 7):
             # благодаря симметрии УК для граней 5 и 6
             # в качестве коллекторов можно не считать,
-            # симметрия учтена при решении системы ур-ний 2.1
+            # симметрия учтена при решении системы ур-ний 2.1.
             res.append(line)
             line = []
             for i in range(7):
@@ -249,7 +258,7 @@ class Rectangular:
         res.append(line)
         # транспонируем, чтобы можно было
         # найти phi_ij = matrix[i][j],
-        # а не  phi_ij = matrix[j][i]
+        # а не  phi_ij = matrix[j][i].
         return np.transpose(np.array(res))
 
     def clausing(self, num_1=10, num_2=10):
@@ -261,7 +270,7 @@ class Rectangular:
         sle = np.array(sle)
         delta = np.linalg.det(sle)
         q = []  # [Q_1, Q_3, Q_4]
-        # метод Крамера
+        # метод Крамера.
         for j in range(3):
             new_sle = change_column(sle, j)
             delta_j = np.linalg.det(new_sle)
