@@ -1,4 +1,3 @@
-import os
 import math
 import numpy as np
 
@@ -16,9 +15,7 @@ def module(v):
 def elementary(center_i: list, center_j: list, normal_i: list, normal_j: list, F_j):
     # F_j - площадь одной ячейки коллектора.
     center_i, center_j = np.array(center_i), np.array(center_j)
-
-    r = module(center_i - center_j)
-    n_i, n_j = module(normal_i), module(normal_j)
+    r, n_i, n_j = module(center_i - center_j), module(normal_i), module(normal_j)
 
     cos_i = abs(scalar_prod(normal_i, center_j - center_i)) / (r * n_i)
     cos_j = abs(scalar_prod(normal_j, center_i - center_j)) / (r * n_j)
@@ -35,128 +32,90 @@ def emitter_to_collector(centers_i, centers_j, normal_i, normal_j, F_i, F_j):
 
 
 # РАЗБИЕНИЕ
-def euclid(num_1, num_2):
-    while num_1 != num_2:
-        if num_1 > num_2:
-            num_1 -= num_2
-        else:
-            num_2 -= num_1
-    return num_1
-
-
-# ф-ция находит минимальное количество квадратов
-# с одинаковой площадью, на которое можно разбить
-# прямоугольник со сторонами a и b.
-def search_squares(a: int, b: int) -> int:
-    gcd = euclid(a, b)  # НОД
-    return int(a * b / gcd)
-
-
-# ф-ция ищет оптимальное кол-во квадратов
-# в зависимости от введенного кол-ва.
-def optimal_squares(a, b, num):
-    min_num = search_squares(a, b)
-    n = num // (4 * min_num)
-    return 4 * min_num * n if n > 0 else min_num
-
-
 # функции разбиения каждой отдельной поверхности на ячейки.
 # 1-входное, 2-выходное сечения.
 # 3-верхняя, 5-нижняя грани.
 # если смотреть в направлении от 1 к 2, то
 # 3,4,5 и 6 грани пронумерованы по часовой стрелке.
-def breaking_1(a, b, num, s=0) -> list:
-    # a - вдоль x, b - вдоль z, s - вдоль y.
-    num = optimal_squares(a, b, num)
-
-    square_side = math.sqrt(a * b / num)
-    l_1 = int(a / square_side)
-    l_2 = int(b / square_side)
+def break_1(a, b, cell, s) -> list:
+    cell = math.sqrt(cell)
+    l_1 = int(a / cell)
+    l_2 = int(b / cell)
     res = []
     for i in range(l_1):
-        x = a / (2 * l_1) + square_side * i
+        x = round(cell / 2 + cell * i, 5)
         for j in range(l_2):
-            z = b / (2 * l_2) + square_side * j
+            z = round(cell / 2 + cell * j, 5)
             center = [x, 0, z]
             res.append(center)
     return res
 
 
-def breaking_2(a, b, num, s) -> list:
+def break_2(a, b, cell, s) -> list:
+    cell = math.sqrt(cell)
+    l_1 = int(a / cell)
+    l_2 = int(b / cell)
     res = []
-    num = optimal_squares(a, b, num)
-
-    square_side = math.sqrt(a * b / num)
-    l_1 = int(a / square_side)
-    l_2 = int(b / square_side)
     for i in range(l_1):
-        x = a / (2 * l_1) + square_side * i
+        x = round(cell / 2 + cell * i, 5)
         for j in range(l_2):
-            z = b / (2 * l_2) + square_side * j
+            z = round(cell / 2 + cell * j, 5)
             center = [x, s, z]
             res.append(center)
     return res
 
 
-def breaking_3(a, b, num, s) -> list:
+def break_3(a, b, cell, s) -> list:
     res = []
-    num = optimal_squares(a, s, num)
-
-    square_side = math.sqrt(a * s / num)
-    l_1 = int(a / square_side)
-    l_2 = int(s / square_side)
+    cell = math.sqrt(cell)
+    l_1 = int(a / cell)
+    l_2 = int(s / cell)
     for i in range(l_1):
-        x = a / (2 * l_1) + square_side * i
+        x = round(cell / 2 + cell * i, 5)
         for j in range(l_2):
-            y = s / (2 * l_2) + square_side * j
+            y = round(cell / 2 + cell * j, 5)
             center = [x, y, b]
             res.append(center)
     return res
 
 
-def breaking_4(a, b, num, s) -> list:
+def break_4(a, b, cell, s) -> list:
     res = []
-    num = optimal_squares(s, b, num)
-
-    square_side = math.sqrt(s * b / num)
-    l_1 = int(s / square_side)
-    l_2 = int(b / square_side)
+    cell = math.sqrt(cell)
+    l_1 = int(s / cell)
+    l_2 = int(b / cell)
     for i in range(l_1):
-        y = s / (2 * l_1) + square_side * i
+        y = round(cell / 2 + cell * i, 5)
         for j in range(l_2):
-            z = b / (2 * l_2) + square_side * j
+            z = round(cell / 2 + cell * j, 5)
             center = [0, y, z]
             res.append(center)
     return res
 
 
-def breaking_5(a, b, num, s) -> list:
+def break_5(a, b, cell, s) -> list:
     res = []
-    num = optimal_squares(a, s, num)
-
-    square_side = math.sqrt(a * s / num)
-    l_1 = int(a / square_side)
-    l_2 = int(s / square_side)
+    cell = math.sqrt(cell)
+    l_1 = int(a / cell)
+    l_2 = int(s / cell)
     for i in range(l_1):
-        x = a / (2 * l_1) + square_side * i
+        x = round(cell / 2 + cell * i, 5)
         for j in range(l_2):
-            y = s / (2 * l_2) + square_side * j
+            y = round(cell / 2 + cell * j, 5)
             center = [x, y, 0]
             res.append(center)
     return res
 
 
-def breaking_6(a, b, num, s) -> list:
+def break_6(a, b, cell, s) -> list:
     res = []
-    num = optimal_squares(s, b, num)
-
-    square_side = math.sqrt(s * b / num)
-    l_1 = int(s / square_side)
-    l_2 = int(b / square_side)
+    cell = math.sqrt(cell)
+    l_1 = int(s / cell)
+    l_2 = int(b / cell)
     for i in range(l_1):
-        y = s / (2 * l_1) + square_side * i
+        y = round(cell / 2 + cell * i, 5)
         for j in range(l_2):
-            z = b / (2 * l_2) + square_side * j
+            z = round(cell / 2 + cell * j, 5)
             center = [a, y, z]
             res.append(center)
     return res
@@ -180,89 +139,78 @@ def area_4(a, b, s):
 def change_column(A, j: int = 0):
     new_A = A.copy()
     new_A[0][j] = 1
-    for i in range(1,len(new_A)):
+    for i in range(1, len(new_A)):
         new_A[i][j] = 0
     return new_A
 
 
 class Rectangular:
-    def __init__(self, a, b, L):
+    def __init__(self, a, b, L, cell=0.01):
         self.a = a
         self.b = b
         self.L = L
+        self.cell = cell
         self.normals = [[0, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [0, 0, 1], [1, 0, 0]]
-        self.breaking = [breaking_1, breaking_2, breaking_3, breaking_4, breaking_5, breaking_6]
+        self.breaks = [break_1, break_2, break_3, break_4, break_5, break_6]
+
         self.areas = [area_1, area_1, area_3, area_4, area_3, area_4]
         for i in range(6):
             self.areas[i] = self.areas[i](a, b, L)
+            self.breaks[i] = self.breaks[i](a, b, cell, L)
         return
-    
-    #i - номер эмиттера, а
-    #num_1 - на сколько квадратов его разбить.
-    #center_j, normal_j - параметры коллектора.
-    def to_other(self, i, center_j, normal_j, F_j, num_1):
-        # параметры эмиттера:
-        # num_i - число квадратов, на которое
-        # удалось разделить эмиттер в итоге.
-        i-=1
-        emitters  = self.breaking[i](self.a, self.b, num_1, self.L)
-        normal_i  = self.normals[i]
-        area_i    = self.areas[i]
-        return sum([elementary(emitter,center_j,normal_i,normal_j,F_j) for emitter in emitters]) / area_i
 
-    def some_pair(self, i, j, num_1, num_2):
+    def angular_coeff(self, i, j):
         # i - номер эмиттера   от 1 до 6.
         # j - номер коллектора от 1 до 6.
-        # num_1, num_2 - на сколько частей разбить
-        # эмиттер и коллектор соответсвенно.
+        # cell - размер ячейки.
         i -= 1  # это - номер эмиттера   в массивах.
         j -= 1  # это - номер коллектора в массивах.
 
         # параметры коллектора:
-        # num_j - число квадратов, на которое
-        # удалось разделить коллектор в итоге.
-        collectors= self.breaking[j](self.a, self.b, num_2, self.L)
-        num_j     = len(collectors)
-        normal_j  = self.normals[j]
-        cell_j    = self.areas[j] / num_j
+        collectors = self.breaks[j]
+        normal_j = self.normals[j]
 
         # параметры эмиттера:
-        # num_i - число квадратов, на которое
-        # удалось разделить эмиттер в итоге.
-        emitters  = self.breaking[i](self.a, self.b, num_1, self.L)
-        num_i     = len(emitters)
-        normal_i  = self.normals[i]
-        area_i    = self.areas[i]
-        cell_i    = area_i / num_i
-        return emitter_to_collector(emitters,collectors,normal_i,normal_j,cell_i,cell_j) / area_i
+        emitters = self.breaks[i]
+        normal_i = self.normals[i]
+        area_i = self.areas[i]
+        return emitter_to_collector(emitters, collectors, normal_i, normal_j, self.cell, self.cell) / area_i
 
-    def matrix(self, num_1, num_2):
+    def check_add(self, i, j):
+        # i - номер эмиттера   от 1 до 6.
+        # j - номер коллектора от 1 до 6.
+        # cell - размер ячейки.
+        i -= 1  # это - номер эмиттера   в массивах.
+        j -= 1  # это - номер коллектора в массивах.
+
+        # параметры коллектора:
+        collectors = self.breaks[j]
+        normal_j = self.normals[j]
+
+        # параметры эмиттера:
+        emitters = self.breaks[i]
+        normal_i = self.normals[i]
+        area_i = self.areas[i]
+        #изменили порядок суммирования
+        #по сравнению с self.angular_coeff(i,j)
+        return emitter_to_collector(collectors, emitters, normal_j, normal_i, self.cell, self.cell) / area_i
+
+    def matrix(self):
         res = []  # будущая матрица УК.
         line = [0] * 7  # текущий столбец матрицы.
-        # т.к. УК вида phi_21, phi_31, ..., phi_61
-        # не используются в дальнейшем.
-        for j in range(1, 7):
-            # благодаря симметрии УК для граней 5 и 6
-            # в качестве коллекторов можно не считать,
-            # симметрия учтена при решении системы ур-ний 2.1.
-            res.append(line)
-            line = []
-            for i in range(7):
-                if i:
-                    if i == j:
-                        line.append(0)
-                    else:
-                        line.append(self.some_pair(i, j, num_1, num_2))
+        for i in range(1, 7):
+            res.append(np.array(line))
+            line = [0]
+            for j in range(1, 7):
+                if j == i:
+                    line.append(0)
                 else:
-                    line = [0]
-        res.append(line)
-        # транспонируем, чтобы можно было
-        # найти phi_ij = matrix[i][j],
-        # а не  phi_ij = matrix[j][i].
-        return np.transpose(np.array(res))
+                    line.append(self.angular_coeff(i, j))
+        res.append(np.array(line))
+        return np.array(res)
 
-    def clausing(self, num_1=10, num_2=10):
-        phi = self.matrix(num_1, num_2)
+    def clausing(self):
+        phi = self.matrix()
         # СЛУ
         sle = [[1, 0, 0],
                [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
