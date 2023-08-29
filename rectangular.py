@@ -18,7 +18,7 @@ def elementary(center_i: list, center_j: list, normal_i: list, normal_j: list, F
     r, n_i, n_j = module(center_i - center_j), module(normal_i), module(normal_j)
 
     cos_i = abs(scalar_prod(normal_i, center_j - center_i)) / (r * n_i)
-    cos_j = abs(scalar_prod(normal_j, center_i - center_j)) / (r * n_j)
+    cos_j = abs(calar_prod(normal_j, center_i - center_j)) / (r * n_j)
     return cos_i * cos_j / (math.pi * r ** 2) * F_j
 
 
@@ -36,7 +36,7 @@ def emitter_to_collector(centers_i, centers_j, normal_i, normal_j, F_i, F_j):
 # 1-входное, 2-выходное сечения.
 # 3-верхняя, 5-нижняя грани.
 # если смотреть в направлении от 1 к 2, то
-# 3,4,5 и 6 грани пронумерованы по часовой стрелке.
+# 3,4,5 и 6 грани пронумерованы против часовой стрелки.
 def break_1(a, b, cell, s) -> list:
     cell = math.sqrt(cell)
     l_1 = int(a / cell)
@@ -150,7 +150,7 @@ class Rectangular:
         self.b = b
         self.L = L
         self.cell = cell
-        self.normals = [[0, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [0, 0, 1], [1, 0, 0]]
+        self.normals = [[0, 1, 0], [0, -1, 0], [0, 0, -1], [1, 0, 0], [0, 0, 1], [-1, 0, 0]]
         self.breaks = [break_1, break_2, break_3, break_4, break_5, break_6]
 
         self.areas = [area_1, area_1, area_3, area_4, area_3, area_4]
@@ -158,7 +158,12 @@ class Rectangular:
             self.areas[i] = self.areas[i](a, b, L)
             self.breaks[i] = self.breaks[i](a, b, cell, L)
         return
-
+    
+    def num_of_cells(self,i):
+        #i - номер искомого эмиттера
+        i -= 1
+        return len(self.breaks[i])
+    
     def angular_coeff(self, i, j):
         # i - номер эмиттера   от 1 до 6.
         # j - номер коллектора от 1 до 6.
@@ -209,8 +214,9 @@ class Rectangular:
         res.append(np.array(line))
         return np.array(res)
 
-    def clausing(self):
-        phi = self.matrix()
+    def flows(self, phi = []):
+        if len(phi) == 0:
+            phi = self.matrix()
         # СЛУ
         sle = [[1, 0, 0],
                [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
@@ -223,6 +229,10 @@ class Rectangular:
             new_sle = change_column(sle, j)
             delta_j = np.linalg.det(new_sle)
             q.append(delta_j / delta)
+        return q
+    
+    def clausing(self):
+        q = self.flows()
         res = phi[1][2] * q[0]
         res += 2 * phi[3][2] * q[1]
         res += 2 * phi[4][2] * q[2]
