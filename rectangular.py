@@ -17,8 +17,8 @@ def elementary(center_i: list, center_j: list, normal_i: list, normal_j: list, F
     center_i, center_j = np.array(center_i), np.array(center_j)
     r, n_i, n_j = module(center_i - center_j), module(normal_i), module(normal_j)
 
-    cos_i = abs(scalar_prod(normal_i, center_j - center_i)) / (r * n_i)
-    cos_j = abs(calar_prod(normal_j, center_i - center_j)) / (r * n_j)
+    cos_i = scalar_prod(normal_i, center_j - center_i) / (r * n_i)
+    cos_j = scalar_prod(normal_j, center_i - center_j) / (r * n_j)
     return cos_i * cos_j / (math.pi * r ** 2) * F_j
 
 
@@ -158,12 +158,12 @@ class Rectangular:
             self.areas[i] = self.areas[i](a, b, L)
             self.breaks[i] = self.breaks[i](a, b, cell, L)
         return
-    
-    def num_of_cells(self,i):
-        #i - номер искомого эмиттера
+
+    def num_of_cells(self, i):
+        # i - номер искомого эмиттера
         i -= 1
         return len(self.breaks[i])
-    
+
     def angular_coeff(self, i, j):
         # i - номер эмиттера   от 1 до 6.
         # j - номер коллектора от 1 до 6.
@@ -196,8 +196,8 @@ class Rectangular:
         emitters = self.breaks[i]
         normal_i = self.normals[i]
         area_i = self.areas[i]
-        #изменили порядок суммирования
-        #по сравнению с self.angular_coeff(i,j)
+        # изменили порядок суммирования
+        # по сравнению с self.angular_coeff(i,j)
         return emitter_to_collector(collectors, emitters, normal_j, normal_i, self.cell, self.cell) / area_i
 
     def matrix(self):
@@ -214,26 +214,26 @@ class Rectangular:
         res.append(np.array(line))
         return np.array(res)
 
-    def flows(self, phi = []):
-        if len(phi) == 0:
-            phi = self.matrix()
-        # СЛУ
-        sle = [[1, 0, 0],
-               [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
-               [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]]
-        sle = np.array(sle)
-        delta = np.linalg.det(sle)
-        q = []  # [Q_1, Q_3, Q_4]
-        # метод Крамера.
-        for j in range(3):
-            new_sle = change_column(sle, j)
-            delta_j = np.linalg.det(new_sle)
-            q.append(delta_j / delta)
-        return q
-    
-    def clausing(self):
-        q = self.flows()
-        res = phi[1][2] * q[0]
-        res += 2 * phi[3][2] * q[1]
-        res += 2 * phi[4][2] * q[2]
-        return res
+
+def flows(phi):
+    # СЛУ
+    sle = [[1, 0, 0],
+           [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
+           [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]]
+    sle = np.array(sle)
+    delta = np.linalg.det(sle)
+    q = []  # [Q_1, Q_3, Q_4]
+    # метод Крамера.
+    for j in range(3):
+        new_sle = change_column(sle, j)
+        delta_j = np.linalg.det(new_sle)
+        q.append(delta_j / delta)
+    return q
+
+
+def clausing(phi):
+    q = flows(phi)
+    res = phi[1][2] * q[0]
+    res += 2 * phi[3][2] * q[1]
+    res += 2 * phi[4][2] * q[2]
+    return res
