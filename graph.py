@@ -2,6 +2,13 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 
+
+def name(title):
+    if title:
+        plt.title(title, color="red", size=30)
+    return
+
+
 class Graph:
     def __init__(self):
         # данные взяты из ссылки №2 Links.txt
@@ -11,11 +18,6 @@ class Graph:
         k = np.array(k)
 
         self.k = k
-        return
-
-    def name(self, title):
-        if title:
-            plt.title(title, color="red")
         return
 
     def save(self, filename, dirname):
@@ -30,12 +32,12 @@ class Graph:
     def customize_graph(self, title="", label_x=""):
         fig = plt.figure(figsize=(12, 9))
         ax = fig.add_subplot(111)
-        ax.tick_params(axis="x", colors="red")
-        ax.tick_params(axis="y", colors="red")
+        ax.tick_params(axis="x", colors="red", size=100)
+        ax.tick_params(axis="y", colors="red", size=10)
 
         plt.grid()
-        plt.xlabel(label_x, color="red")
-        plt.ylabel('k', color="red")
+        plt.xlabel(label_x, size=100, color="red")
+        plt.ylabel('k', size=20, color="red")
 
-        self.name(title)
+        name(title)
         return
