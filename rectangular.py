@@ -231,6 +231,24 @@ def flows(phi):
     return q
 
 
+def check_solution(phi, x):
+    sle = [[1, 0, 0],
+           [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
+           [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]]
+
+    right_part = [1, 0, 0]
+    for i in range(len(sle)):
+        equation = 0
+        for j in range(len(sle[i])):
+            equation += sle[i][j] * x[j]
+        if round(equation,5) != right_part[i]:
+            print("Система не выполнена для " + str(i) + "-го уравнения")
+            print(equation,right_part[i])
+            print("")
+    print("Проверка решения системы закончена")
+    return
+
+
 def clausing(phi):
     q = flows(phi)
     res = phi[1][2] * q[0]
