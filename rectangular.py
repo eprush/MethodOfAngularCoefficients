@@ -135,15 +135,6 @@ def area_4(a, b, s):
 
 
 # ПРОВОДИМОСТЬ
-# ф-ция, заменяющая j-й столбец матрицы A.
-def change_column(A, j: int = 0):
-    new_A = A.copy()
-    new_A[0][j] = 1
-    for i in range(1, len(new_A)):
-        new_A[i][j] = 0
-    return new_A
-
-
 class Rectangular:
     def __init__(self, a, b, L, cell=0.01):
         self.a = a
@@ -215,22 +206,6 @@ class Rectangular:
         return np.array(res)
 
 
-def flows(phi):
-    # СЛУ
-    sle = [[1, 0, 0],
-           [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
-           [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]]
-    sle = np.array(sle)
-    delta = np.linalg.det(sle)
-    q = []  # [Q_1, Q_3, Q_4]
-    # метод Крамера.
-    for j in range(3):
-        new_sle = change_column(sle, j)
-        delta_j = np.linalg.det(new_sle)
-        q.append(delta_j / delta)
-    return q
-
-
 def check_solution(phi, x):
     sle = [[1, 0, 0],
            [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
@@ -241,17 +216,36 @@ def check_solution(phi, x):
         equation = 0
         for j in range(len(sle[i])):
             equation += sle[i][j] * x[j]
-        if round(equation,5) != right_part[i]:
+        if round(equation, 5) != right_part[i]:
             print("Система не выполнена для " + str(i) + "-го уравнения")
-            print(equation,right_part[i])
+            print(equation, right_part[i])
             print("")
     print("Проверка решения системы закончена")
     return
 
 
+# ф-ция, заменяющая j-й столбец матрицы A.
+def change_column(A, j: int = 0):
+    new_A = A.copy()
+    new_A[0][j] = 1
+    for i in range(1, len(new_A)):
+        new_A[i][j] = 0
+    return new_A
+
+def flows(phi):
+    # СЛУ
+    sle = np.array([[1, 0, 0],
+                    [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
+                    [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]])
+    delta = np.linalg.det(sle)  # det(sle)
+    q = []  # [Q_1, Q_3, Q_4]
+    # метод Крамера.
+    for j in range(3):
+        new_sle = change_column(sle, j)
+        delta_j = np.linalg.det(new_sle)  # det(new_sle)
+        q.append(delta_j / delta)
+    return q
+
 def clausing(phi):
     q = flows(phi)
-    res = phi[1][2] * q[0]
-    res += 2 * phi[3][2] * q[1]
-    res += 2 * phi[4][2] * q[2]
-    return res
+    return (phi[1][2] * q[0]) + 2 * (phi[3][2] * q[1]) + 2 * (phi[4][2] * q[2])
