@@ -29,15 +29,17 @@ class Graph:
         os.chdir("..")
         return
 
-    def customize_graph(self, title="", label_x=""):
+    def customize_graph(self, title = "", label_x = ""):
         fig = plt.figure(figsize=(12, 9))
         ax = fig.add_subplot(111)
-        ax.tick_params(axis="x", colors="red", size=100)
-        ax.tick_params(axis="y", colors="red", size=10)
+        ax.tick_params(axis= "x", colors= "red", size= 10)
+        ax.tick_params(axis= "y", colors= "red", size= 10)
 
         plt.grid()
-        plt.xlabel(label_x, size=100, color="red")
-        plt.ylabel('k', size=20, color="red")
+        plt.xticks(size = 20)
+        plt.yticks(size = 20)
+        plt.xlabel(label_x, size= 30, color= "red")
+        plt.ylabel('k', size= 30, color= "red")
 
         name(title)
         return
