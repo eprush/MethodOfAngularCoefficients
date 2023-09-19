@@ -1,137 +1,23 @@
-import math
 import numpy as np
 
-
 # УГЛОВЫЕ КОЭФФИЦИЕНТЫ
-def scalar_prod(v_1, v_2):
-    v_1, v_2 = np.array(v_1), np.array(v_2)
-    return np.dot(v_1, v_2)
-
-
-def module(v):
-    return math.sqrt(scalar_prod(v, v))
-
-
-def elementary(center_i: list, center_j: list, normal_i: list, normal_j: list, F_j):
+def elementary(center_i: np.ndarray, center_j: np.ndarray, normal_i: np.ndarray, normal_j: np.ndarray, F_j):
     # F_j - площадь одной ячейки коллектора.
-    center_i, center_j = np.array(center_i), np.array(center_j)
-    r, n_i, n_j = module(center_i - center_j), module(normal_i), module(normal_j)
+    r_vector = center_j - center_i
+    r = np.linalg.norm(r_vector)
+    n_i, n_j = np.linalg.norm(normal_i), np.linalg.norm(normal_j)
 
-    cos_i = scalar_prod(normal_i, center_j - center_i) / (r * n_i)
-    cos_j = scalar_prod(normal_j, center_i - center_j) / (r * n_j)
-    return cos_i * cos_j / (math.pi * r ** 2) * F_j
-
-
-def local(center_i, centers_j, normal_i, normal_j, F_j):
-    return sum([elementary(center_i, center, normal_i, normal_j, F_j) for center in centers_j])
+    cos_i = np.dot(normal_i, r_vector) / (r * n_i)
+    cos_j = np.dot(normal_j, r_vector) / (r * n_j)
+    return cos_i * cos_j / (np.pi * r ** 2) * F_j
 
 
 def emitter_to_collector(centers_i, centers_j, normal_i, normal_j, F_i, F_j):
+    def local(center_i, centers_j, normal_i, normal_j, F_j):
+        return sum([elementary(center_i, center, normal_i, normal_j, F_j) for center in centers_j])
+
     # F_i - площадь одной ячейки эмиттера.
     return sum([local(center, centers_j, normal_i, normal_j, F_j) for center in centers_i]) * F_i
-
-
-# РАЗБИЕНИЕ
-# функции разбиения каждой отдельной поверхности на ячейки.
-# 1-входное, 2-выходное сечения.
-# 3-верхняя, 5-нижняя грани.
-# если смотреть в направлении от 1 к 2, то
-# 3,4,5 и 6 грани пронумерованы против часовой стрелки.
-def break_1(a, b, cell, s) -> list:
-    cell = math.sqrt(cell)
-    l_1 = int(a / cell)
-    l_2 = int(b / cell)
-    res = []
-    for i in range(l_1):
-        x = round(cell / 2 + cell * i, 5)
-        for j in range(l_2):
-            z = round(cell / 2 + cell * j, 5)
-            center = [x, 0, z]
-            res.append(center)
-    return res
-
-
-def break_2(a, b, cell, s) -> list:
-    cell = math.sqrt(cell)
-    l_1 = int(a / cell)
-    l_2 = int(b / cell)
-    res = []
-    for i in range(l_1):
-        x = round(cell / 2 + cell * i, 5)
-        for j in range(l_2):
-            z = round(cell / 2 + cell * j, 5)
-            center = [x, s, z]
-            res.append(center)
-    return res
-
-
-def break_3(a, b, cell, s) -> list:
-    res = []
-    cell = math.sqrt(cell)
-    l_1 = int(a / cell)
-    l_2 = int(s / cell)
-    for i in range(l_1):
-        x = round(cell / 2 + cell * i, 5)
-        for j in range(l_2):
-            y = round(cell / 2 + cell * j, 5)
-            center = [x, y, b]
-            res.append(center)
-    return res
-
-
-def break_4(a, b, cell, s) -> list:
-    res = []
-    cell = math.sqrt(cell)
-    l_1 = int(s / cell)
-    l_2 = int(b / cell)
-    for i in range(l_1):
-        y = round(cell / 2 + cell * i, 5)
-        for j in range(l_2):
-            z = round(cell / 2 + cell * j, 5)
-            center = [0, y, z]
-            res.append(center)
-    return res
-
-
-def break_5(a, b, cell, s) -> list:
-    res = []
-    cell = math.sqrt(cell)
-    l_1 = int(a / cell)
-    l_2 = int(s / cell)
-    for i in range(l_1):
-        x = round(cell / 2 + cell * i, 5)
-        for j in range(l_2):
-            y = round(cell / 2 + cell * j, 5)
-            center = [x, y, 0]
-            res.append(center)
-    return res
-
-
-def break_6(a, b, cell, s) -> list:
-    res = []
-    cell = math.sqrt(cell)
-    l_1 = int(s / cell)
-    l_2 = int(b / cell)
-    for i in range(l_1):
-        y = round(cell / 2 + cell * i, 5)
-        for j in range(l_2):
-            z = round(cell / 2 + cell * j, 5)
-            center = [a, y, z]
-            res.append(center)
-    return res
-
-
-# площади "уникальных" поверхностей - area_1 == area_2 итд.
-def area_1(a, b, s):
-    return a * b
-
-
-def area_3(a, b, s):
-    return a * s
-
-
-def area_4(a, b, s):
-    return s * b
 
 
 # ПРОВОДИМОСТЬ
@@ -141,14 +27,82 @@ class Rectangular:
         self.b = b
         self.L = L
         self.cell = cell
+        self.areas = [a * b, a * b, a * L, b * L, a * L, b * L]
+        self.breaks = [self.breaking(i) for i in range(1, 7)]
         self.normals = [[0, 1, 0], [0, -1, 0], [0, 0, -1], [1, 0, 0], [0, 0, 1], [-1, 0, 0]]
-        self.breaks = [break_1, break_2, break_3, break_4, break_5, break_6]
 
-        self.areas = [area_1, area_1, area_3, area_4, area_3, area_4]
-        for i in range(6):
-            self.areas[i] = self.areas[i](a, b, L)
-            self.breaks[i] = self.breaks[i](a, b, cell, L)
-        return
+    def breaking(self, i):
+        # РАЗБИЕНИЕ
+        # функции разбиения каждой пары поверхностей на ячейки.
+        # 1-входное, 2-выходное сечения.
+        # 3-верхняя, 5-нижняя грани.
+        # если смотреть в направлении от 1 к 2, то
+        # 3,4,5 и 6 грани пронумерованы по часовой стрелкеf.
+        def br_12(i) -> np.ndarray:
+            if i != 1 and i != 2:
+                raise ValueError("Unsuitable side number : 1 or 2")
+            y = 0.0 if i == 1 else float(self.L)
+            step = np.sqrt(self.cell)
+            l_1 = int(self.a / step)
+            l_2 = int(self.b / step)
+            res = np.array([[0.0]*3 for _ in range(l_1*l_2)])
+            index = 0
+            for i in range(l_1):
+                x = step / 2 + step * i
+                for j in range(l_2):
+                    z = step / 2 + step * j
+                    center = np.array([x, y, z])
+                    res[index] = center
+                    index += 1
+            return res
+
+        def br_35(i) -> np.ndarray:
+            if i != 3 and i != 5:
+                raise ValueError("Unsuitable side number : 3 or 5")
+            z = 0.0 if i == 5 else float(self.b)
+            step = np.sqrt(self.cell)
+            l_1 = int(self.a / step)
+            l_2 = int(self.L / step)
+            res = np.array([[0.0]*3 for _ in range(l_1*l_2)])
+            index = 0
+            for i in range(l_1):
+                x = step / 2 + step * i
+                for j in range(l_2):
+                    y = step / 2 + step * j
+                    center = np.array([x, y, z])
+                    res[index] = center
+                    index += 1
+            return res
+
+        def br_46(i) -> np.ndarray:
+            if i != 4 and i != 6:
+                raise ValueError("Unsuitable side number : 4 or 6")
+            x = 0.0 if i == 4 else float(self.a)
+            step = np.sqrt(self.cell)
+            l_1 = int(self.L / step)
+            l_2 = int(self.b / step)
+            res = np.array([[0.0]*3 for _ in range(l_1*l_2)])
+            index = 0
+            for i in range(l_1):
+                y = step / 2 + step * i
+                for j in range(l_2):
+                    z = step / 2 + step * j
+                    center = np.array([x, y, z])
+                    res[index] = center
+                    index += 1
+            return res
+
+        try:
+            if i < 3:
+                return br_12(i)
+            elif i == 3 or i == 5:
+                return br_35(i)
+            else:
+                return br_46(i)
+        except ValueError as err:
+            print("ValueError:", err)
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=}")
 
     def num_of_cells(self, i):
         # i - номер искомого эмиттера
@@ -192,59 +146,31 @@ class Rectangular:
         return emitter_to_collector(collectors, emitters, normal_j, normal_i, self.cell, self.cell) / area_i
 
     def matrix(self):
-        res = []  # будущая матрица УК.
-        line = [0] * 7  # текущий столбец матрицы.
+        res = np.array([[0] * 7 for _ in range(7)])  # будущая матрица УК.
         for i in range(1, 7):
-            res.append(np.array(line))
-            line = [0]
             for j in range(1, 7):
-                if j == i:
-                    line.append(0)
-                else:
-                    line.append(self.angular_coeff(i, j))
-        res.append(np.array(line))
-        return np.array(res)
+                if i != j:
+                    res[i][j] = self.angular_coeff(i, j)
+        return res
 
 
 def check_solution(phi, x):
-    sle = [[1, 0, 0],
-           [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
-           [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]]
+    A = [[1, 0, 0],
+         [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
+         [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]]
 
-    right_part = [1, 0, 0]
-    for i in range(len(sle)):
-        equation = 0
-        for j in range(len(sle[i])):
-            equation += sle[i][j] * x[j]
-        if round(equation, 5) != right_part[i]:
-            print("Система не выполнена для " + str(i) + "-го уравнения")
-            print(equation, right_part[i])
-            print("")
-    print("Проверка решения системы закончена")
-    return
+    b = [1, 0, 0]
+    return np.allclose((A, x), b)
 
-
-# ф-ция, заменяющая j-й столбец матрицы A.
-def change_column(A, j: int = 0):
-    new_A = A.copy()
-    new_A[0][j] = 1
-    for i in range(1, len(new_A)):
-        new_A[i][j] = 0
-    return new_A
 
 def flows(phi):
     # СЛУ
-    sle = np.array([[1, 0, 0],
-                    [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
-                    [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]])
-    delta = np.linalg.det(sle)  # det(sle)
-    q = []  # [Q_1, Q_3, Q_4]
-    # метод Крамера.
-    for j in range(3):
-        new_sle = change_column(sle, j)
-        delta_j = np.linalg.det(new_sle)  # det(new_sle)
-        q.append(delta_j / delta)
-    return q
+    A = np.array([[1, 0, 0],
+                  [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
+                  [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]])
+    b = np.array([1, 0, 0])
+    return np.linalg.solve(A, b)
+
 
 def clausing(phi):
     q = flows(phi)
