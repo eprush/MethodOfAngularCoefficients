@@ -21,7 +21,7 @@ def emitter_to_collector(centers_i, centers_j, normal_i, normal_j, F_i, F_j):
 
 
 # ПРЯМОУГОЛЬНЫЙ КАНАЛ
-class Rectangular:
+class Tube:
     def __init__(self, a, b, L, cell=0.01):
         self.a = a
         self.b = b
