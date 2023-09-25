@@ -7,8 +7,8 @@ def elementary(center_i: np.ndarray, center_j: np.ndarray, normal_i: np.ndarray,
     r = np.linalg.norm(r_vector)
     n_i, n_j = np.linalg.norm(normal_i), np.linalg.norm(normal_j)
 
-    cos_i = np.dot(normal_i, r_vector) / (r * n_i)
-    cos_j = np.dot(normal_j, r_vector) / (r * n_j)
+    cos_i = abs( np.dot(normal_i, r_vector) ) / (r * n_i)
+    cos_j = abs( np.dot(normal_j, r_vector) ) / (r * n_j)
     return cos_i * cos_j / (np.pi * r ** 2) * F_j
 
 
@@ -20,7 +20,7 @@ def emitter_to_collector(centers_i, centers_j, normal_i, normal_j, F_i, F_j):
     return sum([local(center, centers_j, normal_i, normal_j, F_j) for center in centers_i]) * F_i
 
 
-# ПРОВОДИМОСТЬ
+# ПРЯМОУГОЛЬНЫЙ КАНАЛ
 class Rectangular:
     def __init__(self, a, b, L, cell=0.01):
         self.a = a
@@ -45,7 +45,7 @@ class Rectangular:
             step = np.sqrt(self.cell)
             l_1 = int(self.a / step)
             l_2 = int(self.b / step)
-            res = np.array([[0.0]*3 for _ in range(l_1*l_2)])
+            res = np.array([np.array([0.0]*3) for _ in range(l_1*l_2)])
             index = 0
             for i in range(l_1):
                 x = step / 2 + step * i
@@ -63,7 +63,7 @@ class Rectangular:
             step = np.sqrt(self.cell)
             l_1 = int(self.a / step)
             l_2 = int(self.L / step)
-            res = np.array([[0.0]*3 for _ in range(l_1*l_2)])
+            res = np.array([np.array([0.0]*3) for _ in range(l_1*l_2)])
             index = 0
             for i in range(l_1):
                 x = step / 2 + step * i
@@ -81,7 +81,7 @@ class Rectangular:
             step = np.sqrt(self.cell)
             l_1 = int(self.L / step)
             l_2 = int(self.b / step)
-            res = np.array([[0.0]*3 for _ in range(l_1*l_2)])
+            res = np.array([np.array([0.0]*3) for _ in range(l_1*l_2)])
             index = 0
             for i in range(l_1):
                 y = step / 2 + step * i
@@ -112,7 +112,7 @@ class Rectangular:
     def angular_coeff(self, i, j):
         # i - номер эмиттера   от 1 до 6.
         # j - номер коллектора от 1 до 6.
-        # cell - размер ячейки.
+        # cell - площадь ячейки.
         i -= 1  # это - номер эмиттера   в массивах.
         j -= 1  # это - номер коллектора в массивах.
 
@@ -146,7 +146,7 @@ class Rectangular:
         return emitter_to_collector(collectors, emitters, normal_j, normal_i, self.cell, self.cell) / area_i
 
     def matrix(self):
-        res = np.array([[0] * 7 for _ in range(7)])  # будущая матрица УК.
+        res = [[0] * 7 for _ in range(7)]  # будущая матрица УК.
         for i in range(1, 7):
             for j in range(1, 7):
                 if i != j:
@@ -154,13 +154,14 @@ class Rectangular:
         return res
 
 
+#ПРОВЕРКА И ОТВЕТ
 def check_solution(phi, x):
-    A = [[1, 0, 0],
+    A = np.array([[1, 0, 0],
          [-phi[1][3], 1 - phi[5][3], -2 * phi[4][3]],
-         [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]]
+         [-phi[1][4], -2 * phi[3][4], 1 - phi[6][4]]])
 
-    b = [1, 0, 0]
-    return np.allclose((A, x), b)
+    b = np.array([1, 0, 0])
+    return np.allclose(np.dot(A, x), b)
 
 
 def flows(phi):
