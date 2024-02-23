@@ -1,5 +1,5 @@
-from typing import List
 import numpy.typing as npt
+from typing import List
 import numpy as np
 
 Center = npt.ArrayLike
@@ -14,7 +14,7 @@ class RectangleSeparator:
                np.array([0, 0, 1]), np.array([-1, 0, 0]))
     SIDES = 6
 
-    def __init__(self, a, b, L, cell=0.01):
+    def __init__(self, a, b, L, cell: float = 0.01):
         self.a, self.b, self.L, self.cell = a, b, L, cell
         self.breaks = self.separate()
 
@@ -96,14 +96,14 @@ class RectangleSeparator:
         except Exception as err:
             print(f"Unexpected {err=}, {type(err)=}")
 
+    def change_cell(self, new_cell: float):
+        self.cell = new_cell
+        self.breaks = self.separate()
+        return
+
     def find_num_cells(self, side: int) -> int:
         # i - the number of the desired emitter
         return len(self.breaks[side])
 
     def find_total_num(self) -> int:
         return sum([self.find_num_cells(side) for side in range(self.SIDES)])
-
-
-# CHECKING
-def check_solution(sle, x, b):
-    return np.allclose(np.dot(sle, x), b)
