@@ -5,10 +5,10 @@ import numpy as np
 
 Matrix_ac = Sequence[Sequence[Sequence[Sequence]]]
 Center = npt.ArrayLike
-Sle = npt.ArrayLike
+Sle = np.ndarray
 
 
-def calc_elementary_ac(center_i: Center, center_j: Center, normal_i: np.ndarray, normal_j: np.ndarray, F_j):
+def calc_elementary_ac(center_i: Center, center_j: Center, normal_i: np.ndarray, normal_j: np.ndarray, F_j) -> float:
     # F_j - the area of one collector cell.
     r_vector = center_j - center_i
     r = np.linalg.norm(r_vector)
@@ -19,73 +19,79 @@ def calc_elementary_ac(center_i: Center, center_j: Center, normal_i: np.ndarray,
     return cos_i * cos_j / (np.pi * r ** 2) * F_j
 
 
+def flatten(arr: Sequence[Sequence]) -> npt.ArrayLike:
+    res = []
+    try:
+        for one_dimensional in arr:
+            res += list(one_dimensional)
+    except TypeError:
+        print(f"the array introduced in flatten() was one-dimensional")
+    return np.array(res)
+
+
 class Tube:
     def __init__(self, separator: Optional[RectangleSeparator]):
         self.separator = separator
 
-    def calc_angular_coeffs(self) -> Sequence[Sequence[Sequence[Sequence]]]:
+    def calc_angular_coeffs(self) -> Sle:
+        def convert(arr: Matrix_ac) -> Sle:
+            # begin with arr[first][second][third][fourth]
+            max_len, total_num = self.separator.find_max_num(), self.separator.find_total_num()
+            sides = self.separator.SIDES
+            buffer = [[flatten(arr[i][j]) if j < len(arr[i]) else [0] * total_num for j in range(max_len)]
+                      for i in range(sides)]  # arr[first][new_second][third + fourth]
+            buffer = np.transpose(np.array(buffer))  # arr[third + fourth][new_second][first]
+            res = []
+            for i in range(total_num):
+                internal_arr = np.transpose(buffer[i])  # arr[first][new_second]
+                internal_arr = [internal_arr[j][:self.separator.find_num_cells(j)] for j in range(sides)]
+                # arr[first][second]
+                internal_arr = flatten(internal_arr)  # arr[first + second]
+                res.append(internal_arr)
+            return np.transpose(np.array(res))  # arr[first + second][third + fourth]
+
         sep = self.separator
         from_output_side = []
         for output_side in range(sep.SIDES):
             from_emitter = []
-            for emitter in sep.breaks[output_side]:
-                def calc_for_each_collector(side: int) -> Sequence[float]:
-                    if side == output_side:
-                        # cells on the same side have angular coeffs equal to 0
-                        return [0] * sep.find_num_cells(side)
-                    return [
-                        calc_elementary_ac(emitter, collector, sep.normals[output_side], sep.normals[side],
+
+            def calc_for_each_collector(side: int, center: Center) -> Sequence[float]:
+                if side == output_side:
+                    # cells on the same side have angular coeffs equal to 0
+                    return [0] * sep.find_num_cells(side)
+                return [calc_elementary_ac(center, collector, sep.normals[output_side], sep.normals[side],
                                            sep.cell) for collector in sep.breaks[side]]
 
-                to_input_side = [calc_for_each_collector(input_side) for input_side in range(sep.SIDES)]
+            for emitter in sep.breaks[output_side]:
+                to_input_side = [calc_for_each_collector(input_side, emitter) for input_side in range(sep.SIDES)]
                 from_emitter.append(to_input_side)
             from_output_side.append(from_emitter)
-        return from_output_side
 
-    def find_pos(self, s: int) -> int:
-        return sum([self.separator.find_num_cells(i) for i in range(s)])
+        return convert(from_output_side)
 
-    def create_sle(self) -> Sle:
-        # builds a system of linear equations 2.1
-        def straighten_out(arr: Sequence[Sequence[Sequence[Sequence]]]) -> Sequence[Sequence]:
-            return [[np.ravel(np.array(arr[i][j])) for j in range(self.separator.find_num_cells(i))]
-                    for i in range(self.separator.SIDES)]  # straightened in 3d and 4th dimensions multidimensional list
+    def solve_sle(self, coeffs: Sle) -> Sequence:
+        def create_sle() -> Sle:
+            # unit matrix, because j-th equation is written for j-th flow
+            return np.eye(self.separator.find_total_num()) - coeffs
 
-        total_number = self.separator.find_total_num()
-        sle = np.eye(total_number)  # the unit matrix, because the j-th equation is written for the j-th flow
-        coeffs = straighten_out(self.calc_angular_coeffs())
+        n = self.separator.find_num_cells(0)
+        b = np.array([(1 / (self.separator.cell * n) if i < n else 0) for i in range(self.separator.find_total_num())])
+        return np.linalg.solve(create_sle(), b)
 
-        def fill_sle():
-            for output_side in range(2, self.separator.SIDES):
-                column_i = self.find_pos(output_side)
-                for emitter_i in range(self.separator.find_num_cells(output_side)):
-                    for row_i in range(total_number):
-                        sle[row_i][column_i] -= coeffs[output_side][emitter_i][row_i]
-                    column_i += 1
-            return
+    def calc_clausing(self, coeffs: Sle) -> float:
+        begin = self.separator.find_num_cells(0)
+        end = begin + self.separator.find_num_cells(1)
+        density_flows = self.solve_sle(coeffs)
 
-        fill_sle()
-        return sle
-
-    def solve_sle(self, sle: Sle) -> Sequence:
-        b = np.array([1 / self.separator.cell if i < self.separator.find_num_cells(0) else 0
-                      for i in range(self.separator.find_total_num())])
-        return np.linalg.solve(sle, b)
-
-    def calc_clausing(self, sle: Sle):
-        density_flows = self.solve_sle(sle)
-        output_side = 1
         res = 0
-        for side in range(self.separator.SIDES):
-            if side == output_side:
-                break
-
-            pos = self.find_pos(side)
-            for collector_i in range(self.separator.find_num_cells(output_side)):
-                res += sum([sle[side][emitter_i][output_side][collector_i] * density_flows[pos + emitter_i]
-                            for emitter_i in range(self.separator.find_num_cells(side))])
+        for i in range(self.separator.find_total_num()):
+            if begin <= i < end:  # flow between cells of the same flat side
+                continue
+            res += sum([coeffs[i][j] * density_flows[i] for j in range(begin, end)])
         return res * self.separator.cell
 
 
-def check_solution(sle, x, b):
-    return np.allclose(np.dot(sle, x), b)
+rect = RectangleSeparator(1, 5, 1, 0.01)
+t = Tube(rect)
+c = t.calc_angular_coeffs()
+print(t.calc_clausing(c), "\n")
