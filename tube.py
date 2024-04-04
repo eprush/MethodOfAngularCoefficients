@@ -1,81 +1,59 @@
-from rectangular.rectangular import RectangleSeparator
-from typing import Optional, Sequence
-import numpy.typing as npt
+from sep.rectangular import RectangleSeparator
+from typing import Sequence
+from decimal import Decimal
 import numpy as np
 
 Matrix_ac = Sequence[Sequence[Sequence[Sequence]]]
-Center = npt.ArrayLike
+Center = np.ndarray
 Sle = np.ndarray
 
 
-def calc_elementary_ac(center_i: Center, center_j: Center, normal_i: np.ndarray, normal_j: np.ndarray, F_j) -> float:
+def calc_elementary(center_i: Center, center_j: Center, normal_i: Center, normal_j: Center, F_j: Decimal) -> Decimal:
     # F_j - the area of one collector cell.
-    r_vector = center_j - center_i
-    r = np.linalg.norm(r_vector)
+    r_vector = np.array(list(map(Decimal, center_j))) - np.array(list(map(Decimal, center_i)))
+    r: Decimal = np.linalg.norm(r_vector)
+    if not (r > 0):
+        return Decimal(0.0)
     n_i, n_j = np.linalg.norm(normal_i), np.linalg.norm(normal_j)
-
     cos_i = abs(np.dot(normal_i, r_vector)) / (r * n_i)
     cos_j = abs(np.dot(normal_j, r_vector)) / (r * n_j)
-    return cos_i * cos_j / (np.pi * r ** 2) * F_j
+    return cos_i * cos_j / (Decimal(np.pi) * r ** 2) * Decimal(F_j)
 
 
-def flatten(arr: Sequence[Sequence]) -> npt.ArrayLike:
+def flatten(arr: Sequence[Sequence]) -> Sequence:
     res = []
     try:
         for one_dimensional in arr:
             res += list(one_dimensional)
     except TypeError:
-        print(f"the array introduced in flatten() was one-dimensional")
-    return np.array(res)
+        print("the array introduced in flatten() was one-dimensional")
+    return res
 
 
 class Tube:
-    def __init__(self, separator: Optional[RectangleSeparator]):
-        self.separator = separator
+    def __init__(self, a, b, L, step_size: Decimal = Decimal(0.1)):
+        self.separator = RectangleSeparator(a, b, L, step_size)
 
     def calc_angular_coeffs(self) -> Sle:
-        def convert(arr: Matrix_ac) -> Sle:
-            # begin with arr[first][second][third][fourth]
-            max_len, total_num = self.separator.find_max_num(), self.separator.find_total_num()
-            sides = self.separator.SIDES
-            buffer = [[flatten(arr[i][j]) if j < len(arr[i]) else [0] * total_num for j in range(max_len)]
-                      for i in range(sides)]  # arr[first][new_second][third + fourth]
-            buffer = np.transpose(np.array(buffer))  # arr[third + fourth][new_second][first]
-            res = []
-            for i in range(total_num):
-                internal_arr = np.transpose(buffer[i])  # arr[first][new_second]
-                internal_arr = [internal_arr[j][:self.separator.find_num_cells(j)] for j in range(sides)]
-                # arr[first][second]
-                internal_arr = flatten(internal_arr)  # arr[first + second]
-                res.append(internal_arr)
-            return np.transpose(np.array(res))  # arr[first + second][third + fourth]
-
         sep = self.separator
-        from_output_side = []
-        for output_side in range(sep.SIDES):
-            from_emitter = []
-
-            def calc_for_each_collector(side: int, center: Center) -> Sequence[float]:
-                if side == output_side:
-                    # cells on the same side have angular coeffs equal to 0
-                    return [0] * sep.find_num_cells(side)
-                return [calc_elementary_ac(center, collector, sep.normals[output_side], sep.normals[side],
-                                           sep.cell) for collector in sep.breaks[side]]
-
-            for emitter in sep.breaks[output_side]:
-                to_input_side = [calc_for_each_collector(input_side, emitter) for input_side in range(sep.SIDES)]
-                from_emitter.append(to_input_side)
-            from_output_side.append(from_emitter)
-
-        return convert(from_output_side)
+        square = sep.step_size ** 2
+        res = []
+        for i, emitter in enumerate(sep):
+            from_emitter = [0.0] * len(sep)
+            normal_i = sep.find_normal(i)
+            for j, collector in enumerate(sep):
+                from_emitter[j] = calc_elementary(emitter, collector, normal_i, sep.find_normal(j), square)
+            res.append(from_emitter)
+        return np.array(res)
 
     def solve_sle(self, coeffs: Sle) -> Sequence:
+
         def create_sle() -> Sle:
             # unit matrix, because j-th equation is written for j-th flow
-            return np.eye(self.separator.find_total_num()) - coeffs
+            return np.eye(len(self.separator)) - coeffs
 
         n = self.separator.find_num_cells(0)
-        b = np.array([(1 / (self.separator.cell * n) if i < n else 0) for i in range(self.separator.find_total_num())])
+        b = np.array([(1 / (self.separator.step_size * n) if i < n else 0) for i in range(len(self.separator))])
         return np.linalg.solve(create_sle(), b)
 
     def calc_clausing(self, coeffs: Sle) -> float:
@@ -84,14 +62,8 @@ class Tube:
         density_flows = self.solve_sle(coeffs)
 
         res = 0
-        for i in range(self.separator.find_total_num()):
+        for i in range(len(self.separator)):
             if begin <= i < end:  # flow between cells of the same flat side
                 continue
             res += sum([coeffs[i][j] * density_flows[i] for j in range(begin, end)])
-        return res * self.separator.cell
-
-
-rect = RectangleSeparator(1, 5, 1, 0.01)
-t = Tube(rect)
-c = t.calc_angular_coeffs()
-print(t.calc_clausing(c), "\n")
+        return res * self.separator.step_size ** 2
