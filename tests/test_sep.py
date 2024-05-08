@@ -1,7 +1,4 @@
-from sep.rectangular import RectangleSeparator
-
-sep = RectangleSeparator(1, 1, 1, 0.05)
-br = sep._breaks
+from tests import br, sep
 
 
 def test_len():

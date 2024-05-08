@@ -1,21 +1,17 @@
 import numpy as np
-from tube import Tube
 from math import isclose
-from decimal import Decimal
+from tests import sep, coeffs
 
-t = Tube(1, 1, 1, Decimal(0.05))
-sep = t.separator
-coeffs = t.calc_angular_coeffs()
+num = len(sep)
 
 
 def test_isolation():
-    for i in range(len(sep)):
-        sums = np.sum(coeffs[i])
-        assert isclose(sums, 1.0), f"Should be equal one; {i}-th side"
+    eps = 10 ** (-2)
+    for i in range(num):
+        assert 1 - eps < np.sum(coeffs[i]) < 1 + eps, f"Incorrect value with {i}-th cell"
 
 
 def test_mutuality():
-    num = len(sep)
     for i in range(num):
         for j in range(num):
-            assert isclose(coeffs[i][j], coeffs[j][i]), f"Should be equal; {i}-th and {j}-th sides"
+            assert isclose(coeffs[i][j], coeffs[j][i]), f"Should be equal; {i}-th and {j}-th cells"

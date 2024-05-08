@@ -1,8 +1,9 @@
-import time
+from decimal import Decimal
 from tube import Tube
+import time
 
 t_1 = time.perf_counter()
-t = Tube(1, 1, 1, 0.05)
+t = Tube(1, 1, 1, Decimal(0.05))
 t_2 = time.perf_counter()
 print("Инстанцирование и разбиение:", t_2 - t_1, "s")
 
