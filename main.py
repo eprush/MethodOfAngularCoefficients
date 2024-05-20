@@ -6,40 +6,56 @@ import numpy as np
 
 
 def plot_num_of_cells(R, L, nums: NDArray[int]):
-    def calc_dependence():
-        Y = [0.0] * len(nums)
+    def calc_graph():
+        Y = np.zeros(len(nums), dtype=float)
         for i in range(len(nums)):
             s = RoundSeparator(R, L, nums[i])
             coeffs = s.calc_ac()
             Y[i] = s.calc_clausing(coeffs)
-        return np.array(Y)
+        return Y
 
     plt.xlabel("Количество ячеек n", size=17)
     plt.ylabel("Коэффициент Клаузинга", size=17)
-    plt.plot(nums, calc_dependence())
+    plt.plot(nums, calc_graph())
     plt.grid()
     plt.show()
 
 
-def plot_len(R, lens, nums, k: NDArray | None = None):
-    def calc_dependence(n):
-        Y = [0.0] * len(lens)
+def plot_len(R, lens, nums, k: NDArray = None):
+    def calc_graph(n):
+        Y = np.zeros(len(lens), dtype=float)
         for i in range(len(lens)):
             s = RoundSeparator(R, lens[i], n)
             coeffs = s.calc_ac()
             Y[i] = s.calc_clausing(coeffs)
-        return np.array(Y)
+        return Y
 
-    for num in nums:
-        plt.plot(lens, calc_dependence(num), label=f"{num}")
-    g = Graph()
-    if k is not None and len(k):
-        plt.plot(lens, k, label=f"эксперимент")
-    plt.xlabel("Длина канала L/R", size=17)
-    plt.ylabel("Коэффициент Клаузинга", size=17)
-    plt.legend(title="Количество колец")
-    plt.grid()
-    plt.show()
+    def clausing():
+        for num in nums:
+            plt.plot(lens, graphs[num], label=f"{num}")
+        if k is not None and len(k):
+            plt.plot(lens, k, label=f"эксперимент")
+        plt.xlabel("Длина канала L/R", size=17)
+        plt.ylabel("Коэффициент Клаузинга", size=17)
+        plt.legend(title="Количество колец")
+        plt.grid()
+        plt.show()
+
+    def deviation_clausing():
+        if k is None or not len(k):
+            raise ValueError("Invalid value of the k parameter at the plot_deviation_len function")
+        for num in nums:
+            plt.plot(lens, (graphs[num] - k) / k * 100, label=f"{num}")
+        plt.xlabel("Длина канала L/R", size=17)
+        plt.ylabel("Отклонение КК, %", size=17)
+        plt.legend(title="Количество колец")
+        plt.grid()
+        plt.show()
+
+    graphs = {num: calc_graph(num) for num in nums}
+    clausing()
+    deviation_clausing()
+    return
 
 
 def create_x() -> NDArray:
@@ -55,5 +71,4 @@ x = np.arange(1, 31)
 plot_num_of_cells(1, 2, x)
 
 x = np.arange(1, 150)
-#plot_len(1, x, np.array([3, 15, 150, 600]))
-plot_len(0.5, create_x(), np.arange(1, 9, 2), Graph().k[1:])
+plot_len(0.5, create_x(), np.arange(1, 11, 3), Graph().k[1:])

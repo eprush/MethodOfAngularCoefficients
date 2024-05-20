@@ -21,7 +21,6 @@ class Tube:
             normal_i = sep.find_normal(i)
             emitter = np.array(emitter)
             for j, collector in enumerate(sep):
-                collector = np.array(collector)
                 from_emitter[j] = calc_elementary(emitter, collector, normal_i, sep.find_normal(j), square)
             res[i] = from_emitter
         return np.array(res)
