@@ -3,7 +3,7 @@ to calculate the Clausing coefficient for a cylindrical tube using the angular c
 ![round_tube_sep](https://github.com/eprush/MethodOfAngularCoefficients/assets/91796933/c945c4fe-9000-4b82-a1e7-6bd013944e41)
 
 
-To run it, just run the file ![main](https://github.com/eprush/MethodOfAngularCoefficients/main.py) . Then graphs of the necessary dependencies will be plotted on the screen.
+To run it, just run the file [main](.main.py) . Then graphs of the necessary dependencies will be plotted on the screen.
 If it is necessary to change the points on these graphs, refer to the signature of the functions 
 plot_num_of_cells and plot_len .
 
