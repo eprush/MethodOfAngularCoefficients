@@ -6,3 +6,5 @@
 *.pyc
 *.cpython-39.pyc
 *-checkpoint.ipynb
+*_pychache
+*.idea
