@@ -19,6 +19,7 @@ def plot_num_of_cells(R, L, nums: NDArray[int]):
     plt.plot(nums, calc_graph())
     plt.grid()
     plt.show()
+    return
 
 
 def plot_len(R, lens, nums, k: NDArray = None):
@@ -40,6 +41,7 @@ def plot_len(R, lens, nums, k: NDArray = None):
         plt.legend(title="Количество колец")
         plt.grid()
         plt.show()
+        return
 
     def deviation_clausing():
         if k is None or not len(k):
@@ -51,6 +53,7 @@ def plot_len(R, lens, nums, k: NDArray = None):
         plt.legend(title="Количество колец")
         plt.grid()
         plt.show()
+        return
 
     graphs = {num: calc_graph(num) for num in nums}
     clausing()
