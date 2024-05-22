@@ -4,7 +4,7 @@ to calculate the Clausing coefficient for a cylindrical tube using the angular c
 
 - Clone this repo:
 ```bash
-git clone --recurse-submodules https://github.com/m-kichik/MF_BTR](https://github.com/eprush/MethodOfAngularCoefficients
+git clone --recurse-submodules https://github.com/eprush/MethodOfAngularCoefficients
 ```
 
 - Execute file:
