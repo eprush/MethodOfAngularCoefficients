@@ -6,9 +6,9 @@
 *.pyc
 *.cpython-39.pyc
 *-checkpoint.ipynb
-separator/_pychache__/
-separator/round/_pychache__/
-separator/rectangle/_pychache__/
-tests/_pychache__/
-_pychache__/
+separator/__pychache__/
+separator/round/__pychache__/
+separator/rectangle/__pychache__/
+tests/__pychache__/
+__pychache__/
 .idea/
