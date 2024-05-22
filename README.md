@@ -11,7 +11,7 @@ git clone --recurse-submodules https://github.com/eprush/MethodOfAngularCoeffici
 
 - Execute file:
 ```bash
-main.py
+python main.py
 ```
 
 - Graphs:
