@@ -18,10 +18,7 @@ class RoundSeparator:
         return np.array([[phi_00, phi_01, phi_02], [phi_10, phi_11, phi_12], [phi_20, phi_21, phi_22]],
                         dtype=float)
 
-    def solve_sle(self, coeffs: NDArray = None) -> NDArray:
-        if coeffs is None:
-            coeffs = self.calc_ac()
-
+    def solve_sle(self, coeffs: NDArray) -> NDArray:
         def fill_sle(i):
             sle[i][i] = 1.0
             sle[i][i - 3] = -coeffs[0][1]
@@ -51,7 +48,9 @@ class RoundSeparator:
         b[0] = 1.0  # the input flow
         return np.linalg.solve(sle, b)
 
-    def calc_clausing(self, coeffs) -> float:
+    def calc_clausing(self, coeffs = None) -> float:
+        if coeffs is None:
+            coeffs = self.calc_ac()
         n = self._count_cells
         flows = self.solve_sle(coeffs)
         # because coeffs[1][1] == 0

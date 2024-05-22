@@ -1,4 +1,4 @@
-from sep.round import RoundSeparator
+from separator.round import RoundSeparator
 from decimal import Decimal
 from tube import Tube
 import time

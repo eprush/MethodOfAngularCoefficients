@@ -50,7 +50,7 @@ class RectangleSeparator:
 
         for couple_side in range(RectangleSeparator.SIDES // 2):
             b_coord, (count_1, count_2) = Decimal(coord[couple_side]), self._steps[couple_side]
-            s_res = create_empty_centers(count_1 * count_2)
+            s_res = np.zeros(3, count_1 * count_2)
             b_res = s_res.copy()
             index = 0
 

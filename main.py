@@ -1,4 +1,4 @@
-from sep.round import RoundSeparator
+from separator.round import RoundSeparator
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 from graphs import experimental_cc

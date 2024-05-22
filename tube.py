@@ -1,4 +1,4 @@
-from sep.rectangular import RectangleSeparator
+from separator.rectangular import RectangleSeparator
 from calc_ac import calc_elementary
 from typing import Sequence
 from decimal import Decimal
