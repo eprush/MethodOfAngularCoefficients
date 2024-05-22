@@ -6,5 +6,7 @@
 *.pyc
 *.cpython-39.pyc
 *-checkpoint.ipynb
+separator/_pychache__/
+tests/_pychache__/
 _pychache__/
 .idea/
