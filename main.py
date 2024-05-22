@@ -1,7 +1,7 @@
 from sep.round import RoundSeparator
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
-from graphs import Graph
+from graphs import experimental_cc
 import numpy as np
 
 
@@ -58,17 +58,5 @@ def plot_len(R, lens, nums, k: NDArray = None):
     return
 
 
-def create_x() -> NDArray:
-    X = np.linspace(0.1, 2, 20)
-    X = X[:-1]
-    X = list(X) + list(np.linspace(2, 5, 7))
-    X = X[:-1]
-    X = list(X) + list(np.linspace(5, 10, 6))
-    return np.array(X)
-
-
-x = np.arange(1, 31)
-plot_num_of_cells(1, 2, x)
-
-x = np.arange(1, 150)
-plot_len(0.5, create_x(), np.arange(1, 11, 3), Graph().k[1:])
+plot_num_of_cells(1, 2, np.arange(1, 31))
+plot_len(0.5, list(experimental_cc.keys()), np.arange(1, 11, 3), list(experimental_cc.values()))

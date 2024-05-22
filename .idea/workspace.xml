@@ -5,15 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="961e845e-5afa-457b-b5d2-fa08e17f9271" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Media/calc_ac.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Media/calc_clausing.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Media/fill_sle.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Media/solve_sle.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/graphs.py" beforeDir="false" afterPath="$PROJECT_DIR$/graphs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/my_test.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -111,7 +104,7 @@
       <recent name="C:\Users\ASUS\MethodOfAngularCoefficients\tests" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.graphs">
+  <component name="RunManager" selected="Python.main">
     <configuration name="graphs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="MethodOfAngularCoefficients" />
       <option name="ENV_FILES" value="" />
@@ -202,8 +195,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.graphs" />
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.graphs" />
         <item itemvalue="Python.my_test" />
         <item itemvalue="Python.time" />
       </list>
