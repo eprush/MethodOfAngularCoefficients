@@ -2,8 +2,18 @@ MethodOfAngularCoefficients is a Python project that provides
 to calculate the Clausing coefficient for a cylindrical tube using the angular coefficients method.
 ![round_tube_sep](https://github.com/eprush/MethodOfAngularCoefficients/assets/91796933/c945c4fe-9000-4b82-a1e7-6bd013944e41)
 
+- Clone this repo:
+```bash
+git clone --recurse-submodules https://github.com/m-kichik/MF_BTR](https://github.com/eprush/MethodOfAngularCoefficients
+```
 
-To run it, just run the file [main.py](''' bash python main.py''') . Then graphs of the necessary dependencies will be plotted on the screen.
+- Execute file:
+```bash
+main.py
+```
+
+- Graphs:
+  Necessary dependencies will be plotted on the screen.
 If it is necessary to change the points on these graphs, refer to the signature of the functions 
 plot_num_of_cells and plot_len .
 
