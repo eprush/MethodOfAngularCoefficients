@@ -33,8 +33,7 @@ class Graph:
         Y = np.zeros(len(self.lens), dtype=float)
         for i in range(len(self.lens)):
             s = RoundSeparator(self.R, self.lens[i], n)
-            coeffs = s.calc_ac()
-            Y[i] = s.calc_clausing(coeffs)
+            Y[i] = s.calc_clausing()
         return Y
 
     def plot_clausing(self, k: NDArray = None):
@@ -67,13 +66,16 @@ class Graph:
         return
 
     def plot_min_pos(self, k: NDArray = None):
-        lens_min, mins = [0.0] * len(self.nums), [0.0] * len(self.nums)
-        for i in range(len(self.nums)):
-            deviation = self.calc_deviation(self.nums[i], k)
-            index_min = int(np.where(deviation == np.min(deviation))[0])
-            lens_min[i] = self.lens[index_min]
-            mins[i] = deviation[index_min]
-        plt.plot(self.nums, lens_min)
+        def find_min():
+            lens_min, mins = np.zeros(len(self.nums), dtype=float), np.zeros(len(self.nums), dtype=float)
+            for i in range(len(self.nums)):
+                deviation = self.calc_deviation(self.nums[i], k)
+                index_min = int(np.where(deviation == np.min(deviation))[0])
+                lens_min[i], mins[i] = self.lens[index_min], deviation[index_min]
+            return lens_min, mins
+
+        lens, mins = find_min()
+        plt.plot(self.nums, lens)
         plt.xlabel("Количество колец", size=17)
         plt.ylabel("Положение точки минимума", size=17)
         plt.grid()
@@ -87,15 +89,15 @@ class Graph:
         return
 
     def plot_zero_pos(self, k: NDArray = None):
-        zeros = np.zeros(len(self.nums), dtype=float)
-        for i in range(len(self.nums)):
-            deviation = self.calc_deviation(self.nums[i], k)
-            for j in range(len(deviation)):
-                if deviation[j] >= 0.0 and j < len(deviation) - 1:
-                    zeros[i] = self.lens[j]
-                    break
+        def find_zero_pos(arr: NDArray):
+            for j in range(len(arr)):
+                if arr[j] >= 0.0 and j < len(arr) - 1:
+                    return self.lens[j]
+
+        zeros = np.array([find_zero_pos(self.calc_deviation(num, k)) for num in self.nums])
         interp = Interpolator(self.nums, zeros)
-        print(interp.calc_params())
+        print(*interp.calc_params())
+
         plt.errorbar(self.nums, zeros, yerr=interp.calc_error(), linestyle=" ")
         plt.plot(self.nums, zeros, marker="o", markersize=1.5, linestyle=" ", label="эксп. точки")
         plt.plot(self.nums, interp.calc_line(), label="аппроксимация")
@@ -104,13 +106,9 @@ class Graph:
         plt.legend()
         plt.grid()
         plt.show()
+        return
 
 
-# plot_num_of_cells(1, 2, np.arange(1, 31))
 y = np.arange(1, 55)
-# plot_num_of_cells(1, 50, y)
 g = Graph(list(theoretical_cc.keys()), y)
-# g.plot_clausing(np.array(list(theoretical_cc.values())))
-# g.plot_deviation(np.array(list(theoretical_cc.values())))
-# g.plot_min_pos(np.array(list(theoretical_cc.values())))
 g.plot_zero_pos(np.array(list(theoretical_cc.values())))

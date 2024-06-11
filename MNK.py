@@ -1,13 +1,14 @@
 from math import sqrt
+from numpy.typing import NDArray
 import numpy as np
 
 
 class Interpolator:
-    def __init__(self, x, y):
+    def __init__(self, x: NDArray, y: NDArray):
         self.x, self.y = x, y
 
     def calc_params(self) -> tuple[float, float, float, float]:
-        n = len(self.y)
+        n = self.y.size
         aver_y, aver_x = np.mean(self.y), np.mean(self.x)
         aver_xy, aver_yy, aver_xx = np.mean(self.x * self.y), np.mean(self.y ** 2), np.mean(self.x ** 2)
         A = (aver_xy - aver_x * aver_y) / (aver_xx - aver_x ** 2)

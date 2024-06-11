@@ -41,14 +41,14 @@ class RoundSeparator:
             sle[i + 2][i + 2] = 1.0 - coeffs[2][2]
 
         n = self._count_cells
-        sle = np.zeros((3*n, 3*n), dtype=float)
+        sle = np.zeros((3 * n, 3 * n), dtype=float)
         for j in range(0, 3 * n, 3):
             fill_sle(j)
-        b = np.zeros(3*n, dtype=float)
+        b = np.zeros(3 * n, dtype=float)
         b[0] = 1.0  # the input flow
         return np.linalg.solve(sle, b)
 
-    def calc_clausing(self, coeffs = None) -> float:
+    def calc_clausing(self, coeffs=None) -> float:
         if coeffs is None:
             coeffs = self.calc_ac()
         n = self._count_cells
