@@ -77,13 +77,15 @@ class Graph:
         lens, mins = find_min()
         plt.plot(self.nums, lens)
         plt.xlabel("Количество колец", size=17)
-        plt.ylabel("Положение точки минимума", size=17)
+        plt.ylabel("Длина канала L/d", size=17)
+        plt.title("Положение точки минимума отклонения КК", size=18)
         plt.grid()
         plt.show()
 
         plt.plot(self.nums, mins)
         plt.xlabel("Количество колец", size=17)
-        plt.ylabel("Положение минимума", size=17)
+        plt.ylabel("Отклонение КК, %", size=17)
+        plt.title("Положение минимума отклонения КК", size=18)
         plt.grid()
         plt.show()
         return
@@ -102,13 +104,14 @@ class Graph:
         plt.plot(self.nums, zeros, marker="o", markersize=1.5, linestyle=" ", label="эксп. точки")
         plt.plot(self.nums, interp.calc_line(), label="аппроксимация")
         plt.xlabel("Количество колец", size=17)
-        plt.ylabel("Положение нуля", size=17)
+        plt.ylabel("Нуль L/d", size=17)
+        plt.title("Положение нуля отклонения КК", size=18)
         plt.legend()
         plt.grid()
         plt.show()
         return
 
 
-y = np.arange(1, 55)
+y = np.arange(1, 51)
 g = Graph(list(theoretical_cc.keys()), y)
 g.plot_zero_pos(np.array(list(theoretical_cc.values())))
