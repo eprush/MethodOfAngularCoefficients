@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 from MNK import Interpolator
+from math import isclose
 from separator.round import RoundSeparator
 from theoretical_cc import theoretical_cc
 
@@ -19,7 +20,6 @@ def plot_num_of_cells(R, L, nums: NDArray[int]):
     plt.xlabel("Количество ячеек n", size=17)
     plt.ylabel("Коэффициент Клаузинга", size=17)
     plt.plot(nums, calc_num_graph())
-    plt.grid()
     plt.show()
     return
 
@@ -79,14 +79,12 @@ class Graph:
         plt.xlabel("Количество колец", size=17)
         plt.ylabel("Длина канала L/d", size=17)
         plt.title("Положение точки минимума отклонения КК", size=18)
-        plt.grid()
         plt.show()
 
         plt.plot(self.nums, mins)
         plt.xlabel("Количество колец", size=17)
         plt.ylabel("Отклонение КК, %", size=17)
         plt.title("Положение минимума отклонения КК", size=18)
-        plt.grid()
         plt.show()
         return
 
@@ -103,7 +101,7 @@ class Graph:
         plt.errorbar(self.nums, zeros, yerr=interp.calc_error(), linestyle=" ")
         plt.plot(self.nums, zeros, marker="o", markersize=1.5, linestyle=" ", label="эксп. точки")
         plt.plot(self.nums, interp.calc_line(), label="аппроксимация")
-        plt.xlabel("Количество колец", size=17)
+        plt.xlabel("Количество колец n", size=17)
         plt.ylabel("Нуль L/d", size=17)
         plt.title("Положение нуля отклонения КК", size=18)
         plt.legend()
@@ -111,7 +109,28 @@ class Graph:
         plt.show()
         return
 
+    def plot_deivation_n(self, l, k: NDArray = None):
+        deviation = np.zeros(len(self.nums), dtype=float)
+        l_pos = int(np.where(isclose(self.lens, l))[0])
+        for i in range(len(self.nums)):
+            d = self.calc_deviation(self.nums[i], k)[l_pos]
+            deviation[i] = d
+            print(i / 1000 * 100)
+        plt.plot(self.nums, deviation)
+        plt.xlabel(f"Количество колец при L/d = {l}")
+        plt.ylabel("Отклонение КК, %")
+        plt.grid()
+        plt.show()
+        return
 
-y = np.arange(1, 51)
-g = Graph(list(theoretical_cc.keys()), y)
-g.plot_zero_pos(np.array(list(theoretical_cc.values())))
+
+n = np.array([1000])
+x = list(theoretical_cc.keys())
+x += list(range(550, 1050, 50))
+values = list(theoretical_cc.values())
+for i in range(len(theoretical_cc), len(x)):
+    values.append(4 / 3 / x[i])  # from table
+values = np.array(values)
+g = Graph(x, n)
+i = x.index(900)
+print(g.calc_deviation(1000, values)[i])
